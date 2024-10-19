@@ -13,7 +13,7 @@ class AuthManager {
    
    var user: User?
    
-   let isMocked: Bool = false
+   let isMocked: Bool
    
    var isSignedIn: Bool = false
    
@@ -25,18 +25,23 @@ class AuthManager {
    
    private var handle: AuthStateDidChangeListenerHandle?
    
-   init() {
-       handle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
-           self?.user = user
-           self?.isSignedIn = user != nil
-       }
-   }
-   
-   deinit {
-       if let handle = handle {
-           Auth.auth().removeStateDidChangeListener(handle)
-       }
-   }
+    init(isMocked: Bool = false) {
+            self.isMocked = isMocked
+
+            if !isMocked {
+                // Only add Firebase listener if not mocked
+                handle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
+                    self?.user = user
+                    self?.isSignedIn = user != nil
+                }
+            }
+        }
+
+        deinit {
+            if let handle = handle {
+                Auth.auth().removeStateDidChangeListener(handle)
+            }
+        }
 
     // https://firebase.google.com/docs/auth/ios/start#sign_up_new_users
     func signUp(email: String, password: String) {
